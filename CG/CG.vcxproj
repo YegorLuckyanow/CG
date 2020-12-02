@@ -132,6 +132,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fShader.glsl" />
+    <None Include="shadowfshader.glsl" />
+    <None Include="shadowvshader.glsl" />
     <None Include="vShader.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

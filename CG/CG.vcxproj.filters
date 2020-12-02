@@ -43,5 +43,11 @@
     <None Include="fShader.glsl">
       <Filter>Исходные файлы</Filter>
     </None>
+    <None Include="shadowvshader.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
+    <None Include="shadowfshader.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
   </ItemGroup>
 </Project>
