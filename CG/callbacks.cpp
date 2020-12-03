@@ -2,11 +2,6 @@
 #include <GLFW/glfw3.h>
 #include<glm/glm.hpp>
 
-void fbSzCallback(GLFWwindow *wnd, int w, int h)
-{
-    glViewport(0, 0, w, h);
-}
-
 void hndKbInput(GLFWwindow *wnd, glm::vec3 &cameraUp)
 {
     if (glfwGetKey(wnd, GLFW_KEY_ESCAPE) == GLFW_PRESS)

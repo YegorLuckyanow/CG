@@ -6,6 +6,7 @@ uniform mat4 viewMatrix;
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform vec3 lightColor;
+uniform float shiness;
 
 in vec3 fPosition;
 in vec3 vNormal;
@@ -25,7 +26,7 @@ void main()
 	vec3 viewDir = normalize(viewPosition - fPosition);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	//vec3 reflectDir = reflect(-lightDir, norm);  
-	float spec = pow(max(dot(viewDir, halfwayDir), 0.0), 32);
+	float spec = pow(max(dot(viewDir, halfwayDir), 0.0), shiness);
 	vec3 specular = specularStrength * spec * lightColor;  
 	FragColor = vec4((ambient + diffuse + specular) * vColor, 1.0);
 }
