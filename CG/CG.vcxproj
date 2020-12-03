@@ -123,11 +123,13 @@
   <ItemGroup>
     <ClCompile Include="callbacks.cpp" />
     <ClCompile Include="cpp\glad.c" />
+    <ClCompile Include="figures.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="shader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="callbacks.h" />
+    <ClInclude Include="figures.h" />
     <ClInclude Include="shader.h" />
   </ItemGroup>
   <ItemGroup>

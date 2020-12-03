@@ -3,6 +3,7 @@
 #include<iostream>
 #include"shader.h"
 #include"callbacks.h"
+#include"figures.h"
 
 int scene = 0;
 
@@ -28,7 +29,7 @@ int main()
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, fbSzCallback);
     Shader prog("vShader.glsl", "fShader.glsl");
-    float vertices[] = {
+    /*float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -70,20 +71,24 @@ int main()
         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-    };
+    };*/
+    float *vertices = new float[36 * 9];
+    getCube(glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -0.0f, -0.0f), glm::vec3(-0.0f, 1.0f, -0.0f), glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0, 1.0, 1.0), vertices);
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBufferData(GL_ARRAY_BUFFER, 36 * 9 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    //model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 view;
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
     glm::vec3 cameraTarg = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -102,7 +107,6 @@ int main()
             prog.setMat4("modelMatrix", model);
             prog.setMat4("viewMatrix", view);
             prog.setMat4("projectionMatrix", projection);
-            prog.setVec3("color", glm::vec3(0.0f, 1.0f, 1.0f));
             prog.setVec3("lightPosition", glm::vec3(1.2f, 1.0f, 2.0f));
             prog.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
             prog.setVec3("viewPosition", cameraPos);
