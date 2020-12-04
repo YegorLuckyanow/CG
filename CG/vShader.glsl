@@ -15,7 +15,7 @@ layout (location = 2) in vec3 color;
 
 void main() 
 {
-    vNormal = normal;
+    vNormal = transpose(inverse(mat3(modelMatrix))) * normal;
 	vColor = color;
     fPosition = vec3(modelMatrix * vec4(position, 1.0));
 	fPosLight = lightMatrix * vec4(fPosition, 1.0);

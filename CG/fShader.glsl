@@ -9,7 +9,7 @@ uniform vec3 lightColor;
 uniform float shiness;
 uniform sampler2D depthMap;
 
-float calcShad(vec4 fPosLight, vec3 normal)
+float calcShad(vec4 fPosLight, vec3 normal, vec3 lightDir)
 {
     vec3 projCoords = fPosLight.xyz / fPosLight.w;
 	if (projCoords.z > 1.0)
@@ -19,8 +19,7 @@ float calcShad(vec4 fPosLight, vec3 normal)
     projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(depthMap, projCoords.xy).r; 
     float currentDepth = projCoords.z;
-	float bias = max(0.0005 * (1.0 - dot(normal, lightPosition)), 0.00005);
-	bias = 0.05;
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
     float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     return shadow;
 }  
@@ -49,7 +48,7 @@ void main()
 	float spec = pow(max(dot(viewDir, halfwayDir), 0.0), shiness);
 	vec3 specular = specularStrength * spec * lightColor;  
 
-	float shad = 1.0 - calcShad(fPosLight, norm);
+	float shad = 1.0 - calcShad(fPosLight, norm, lightDir);
 	//shad = 1.0;
 
 	FragColor = vec4((shad * (ambient + diffuse + specular)) * vColor, 1.0);

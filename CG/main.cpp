@@ -89,7 +89,7 @@ int main()
     for (int i = 1; i < 10; ++i)
     {
         float mult = 0.25f;
-        glm::vec3 ang = 0.5f * i * glm::vec3(i % 3 == 1 ? -1.0f : 1.0f, i % 2 == 0 ? -1.0f : 1.0f, i % 3 == 2 ? -1.0f : 1.0f);
+        glm::vec3 ang = glm::vec3(-1.0f) + 0.3f * i * glm::vec3(i % 3 == 1 ? -1.0f : 1.0f, i % 2 == 0 ? -1.0f : 1.0f, i % 3 == 2 ? -1.0f : 1.0f);
         getCube(glm::vec3(i * mult, 0.0f, 0.0f) + ang, glm::vec3(0.0f, -0.0f, -0.0f) + ang, glm::vec3(-0.0f, i * mult, -0.0f) + ang, glm::vec3(0.0f, 0.0f, i * mult) + ang, glm::vec3(0.0, 1.0, 1.0), vertices + i * 36 * 9);
     }
     getTriangle(glm::vec3(-1000.0, -5.0, -1000.0), glm::vec3(-1000.0, -5.0, 1000.0), glm::vec3(1000.0, -5.0, 0.0f), glm::vec3(1.0f, 0.0f, 1.0f), vertices + 36 * 9 * 10);
@@ -146,8 +146,8 @@ int main()
             projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glm::vec3 lightPos = glm::vec3(-2.0f, 0.0f, -1.0f);
-            glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::vec3 lightPos = glm::vec3(5.0f, 0.0f, -1.0f);
+            glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             getCube(glm::vec3(0.1f, 0.0f, 0.0f) + lightPos, lightPos, glm::vec3(-0.0f, 0.1f, -0.0f) + lightPos, glm::vec3(0.0f, 0.0f, 0.1f) + lightPos, lightColor, vertices);
             glBufferData(GL_ARRAY_BUFFER, (10 * 36 * 9 + 3 * 9) * sizeof(float), vertices, GL_STATIC_DRAW);
             view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
