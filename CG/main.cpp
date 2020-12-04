@@ -40,6 +40,7 @@ int main()
     glfwSetFramebufferSizeCallback(window, fbSzCallback);
     Shader prog("vShader.glsl", "fShader.glsl");
     Shader lightprog("vShader.glsl", "lightfShader.glsl");
+    Shader shProg("shadowvshader.glsl", "shadowfshader.glsl");
     /*float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -91,7 +92,28 @@ int main()
         glm::vec3 ang = 0.5f * i * glm::vec3(i % 3 == 1 ? -1.0f : 1.0f, i % 2 == 0 ? -1.0f : 1.0f, i % 3 == 2 ? -1.0f : 1.0f);
         getCube(glm::vec3(i * mult, 0.0f, 0.0f) + ang, glm::vec3(0.0f, -0.0f, -0.0f) + ang, glm::vec3(-0.0f, i * mult, -0.0f) + ang, glm::vec3(0.0f, 0.0f, i * mult) + ang, glm::vec3(0.0, 1.0, 1.0), vertices + i * 36 * 9);
     }
-    getTriangle(glm::vec3(-1000.0, -11.0, -1000.0), glm::vec3(-1000.0, -11.0, 1000.0), glm::vec3(1000.0, -11.0, 0.0f), glm::vec3(1.0f, 0.0f, 1.0f), vertices + 36 * 9 * 10);
+    getTriangle(glm::vec3(-1000.0, -5.0, -1000.0), glm::vec3(-1000.0, -5.0, 1000.0), glm::vec3(1000.0, -5.0, 0.0f), glm::vec3(1.0f, 0.0f, 1.0f), vertices + 36 * 9 * 10);
+
+    unsigned int depthFBO;
+    glGenFramebuffers(1, &depthFBO);
+    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+        SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -113,26 +135,42 @@ int main()
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
+    float near_plane = 1.0f, far_plane = 7.5f;
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
         hndKbInput(window, cameraUp);
         if (scene == 0)
         {
+            cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
             projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-            glm::vec3 lightPos = glm::vec3(cos(glfwGetTime()) * 1.0f, sin(glfwGetTime()) * 1.0f, -1.0f);
+            glm::vec3 lightPos = glm::vec3(-2.0f, 0.0f, -1.0f);
+            glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
             getCube(glm::vec3(0.1f, 0.0f, 0.0f) + lightPos, lightPos, glm::vec3(-0.0f, 0.1f, -0.0f) + lightPos, glm::vec3(0.0f, 0.0f, 0.1f) + lightPos, lightColor, vertices);
             glBufferData(GL_ARRAY_BUFFER, (10 * 36 * 9 + 3 * 9) * sizeof(float), vertices, GL_STATIC_DRAW);
-            cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
             view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
+            glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+
+            shProg.use();
+            shProg.setMat4("lightProj", lightProj);
+            shProg.setMat4("lightView", lightView);
+            shProg.setMat4("model", model);
+            glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+            glBindFramebuffer(GL_FRAMEBUFFER, depthFBO);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLES, 36, 36 * 9);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
             lightprog.use();
             lightprog.setMat4("modelMatrix", model);
             lightprog.setMat4("viewMatrix", view);
             lightprog.setMat4("projectionMatrix", projection);
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
+
             prog.use();
             prog.setMat4("modelMatrix", model);
             prog.setMat4("viewMatrix", view);
@@ -141,6 +179,8 @@ int main()
             prog.setVec3("lightColor", lightColor);
             prog.setVec3("viewPosition", cameraPos);
             prog.setFloat("shiness", 64);
+            glm::mat4 lightMatrix = lightProj * lightView;
+            prog.setMat4("lightMatrix", lightMatrix);
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9 + 3);
         }
