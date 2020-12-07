@@ -140,6 +140,9 @@
     <None Include="shadowvshader.glsl" />
     <None Include="vShader.glsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="normalMap.png" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

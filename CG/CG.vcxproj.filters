@@ -62,4 +62,9 @@
       <Filter>Исходные файлы</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="normalMap.png">
+      <Filter>Файлы ресурсов</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
