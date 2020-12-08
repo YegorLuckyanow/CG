@@ -27,7 +27,7 @@ void getRectangle(glm::vec3 point1, glm::vec3 point2, glm::vec3 point3, glm::vec
     rectVertices[7] = 0.0f;
     rectVertices[args_nmb + 6] = 0.0f;
     rectVertices[args_nmb + 7] = 0;
-    rectVertices[2 * args_nmb + 6] = 1.0f;
+    rectVertices[2 * args_nmb + 6] = 0.0f;
     rectVertices[2 * args_nmb + 7] = 1.0f;
     rectVertices[3 * args_nmb + 6] = 0.0f;
     rectVertices[3 * args_nmb + 7] = 1.0f;

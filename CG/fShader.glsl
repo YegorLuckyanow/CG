@@ -21,7 +21,7 @@ float calcShad(vec4 fPosLight, vec3 normal, vec3 lightDir)
     projCoords = projCoords * 0.5 + 0.5;
     float closestDepth = texture(depthMap, projCoords.xy).r; 
     float currentDepth = projCoords.z;
-	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+	float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.01);
     float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     return shadow;
 }  
@@ -34,6 +34,7 @@ in mat3 TBN;
 in VS_OUT {
 	flat int plane;
 } fs_in;
+in vec2 texCoords;
 
 out vec4 FragColor;
 
@@ -44,12 +45,12 @@ void main()
     vec3 ambient = ambientStrength * lightColor;
 
 	vec3 norm = normalize(vNormal);
-	/*if (plane == 0)
+	if (plane == 0)
 	{
-		norm = texture(normalMap, vec2(vColor.r, vColor.g)).rgb;
+		norm = texture(normalMap, texCoords).rgb;
 		norm = norm * 2.0 - 1.0;
 		norm = normalize(TBN * norm);
-	}*/
+	}
 	vec3 lightDir = normalize(lightPosition - fPosition);
 	float diff = max(dot(norm, lightDir), 0.0);
 	vec3 diffuse = diff * lightColor;
@@ -74,8 +75,4 @@ void main()
 		resColor = vColor;
 	}
 	FragColor = vec4((shad * (ambient + diffuse + specular)) * resColor, 1.0);
-	/*if (plane == 0)
-	{
-		FragColor = texture(normalMap, vColor.rg);
-	}*/
 }
