@@ -135,10 +135,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fShader.glsl" />
+    <None Include="fShader2.glsl" />
+    <None Include="gShader.glsl" />
     <None Include="lightfShader.glsl" />
     <None Include="shadowfshader.glsl" />
     <None Include="shadowvshader.glsl" />
     <None Include="vShader.glsl" />
+    <None Include="vShader2.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="imText.png" />

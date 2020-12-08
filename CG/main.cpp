@@ -42,6 +42,7 @@ int main()
     Shader prog("vShader.glsl", "fShader.glsl");
     Shader lightprog("vShader.glsl", "lightfShader.glsl");
     Shader shProg("shadowvshader.glsl", "shadowfshader.glsl");
+    Shader prog2("vShader2.glsl", "gShader.glsl", "fShader2.glsl");
     /*float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -94,6 +95,13 @@ int main()
         getCube(glm::vec3(i * mult, 0.0f, 0.0f) + ang, glm::vec3(0.0f, -0.0f, -0.0f) + ang, glm::vec3(-0.0f, i * mult, -0.0f) + ang, glm::vec3(0.0f, 0.0f, i * mult) + ang, glm::vec3(0.0, 1.0, 1.0), vertices + i * 36 * args_nmb);
     }
     getTriangle(glm::vec3(-1000.0, -5.0, -1000.0), glm::vec3(-1000.0, -5.0, 1000.0), glm::vec3(1000.0, -5.0, 0.0f), glm::vec3(1.0f, 0.0f, 1.0f), vertices + 36 * args_nmb * 10);
+
+    float points[] = {
+        -0.5f,  0.5f,
+        0.5f,  0.5f,
+        -0.5f, -0.5f,
+        0.5f, -0.5f
+    };
 
     unsigned int depthFBO;
     glGenFramebuffers(1, &depthFBO);
@@ -195,6 +203,17 @@ int main()
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
     glEnableVertexAttribArray(4);
+
+    unsigned int VAO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), points, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
     glm::mat4 model = glm::mat4(1.0f);
     //model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     glm::mat4 view;
@@ -207,7 +226,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
-        hndKbInput(window, cameraUp);
+        hndKbInput(window, scene);
         if (scene == 0)
         {
             glActiveTexture(GL_TEXTURE0);
@@ -218,6 +237,8 @@ int main()
             glm::vec3 lightPos = glm::vec3(5.0f, 0.0f, -1.0f);
             glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             getCCube(glm::vec3(0.1f, 0.0f, 0.0f) + lightPos, lightPos, glm::vec3(-0.0f, 0.1f, -0.0f) + lightPos, glm::vec3(0.0f, 0.0f, 0.1f) + lightPos, lightColor, vertices);
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, (10 * 36 * args_nmb + 3 * args_nmb) * sizeof(float), vertices, GL_STATIC_DRAW);
             view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
             glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
@@ -265,6 +286,14 @@ int main()
             prog.setInt("parallaxMap", 2);
             prog.setInt("textureIm", 3);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9 + 3);
+        }
+        else if (scene == 1)
+        {
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+            prog2.use();
+            glBindVertexArray(VAO2);
+            glDrawArrays(GL_POINTS, 0, 4);
         }
         glfwSwapBuffers(window);
         glfwPollEvents();

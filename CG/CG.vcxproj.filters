@@ -61,6 +61,15 @@
     <None Include="lightfShader.glsl">
       <Filter>Исходные файлы</Filter>
     </None>
+    <None Include="fShader2.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
+    <None Include="gShader.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
+    <None Include="vShader2.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="normalMap.png">

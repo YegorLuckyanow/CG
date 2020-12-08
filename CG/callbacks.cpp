@@ -2,26 +2,18 @@
 #include <GLFW/glfw3.h>
 #include<glm/glm.hpp>
 
-void hndKbInput(GLFWwindow *wnd, glm::vec3 &cameraUp)
+void hndKbInput(GLFWwindow *wnd, int &scene)
 {
     if (glfwGetKey(wnd, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(wnd, true);
     }
-    else if (glfwGetKey(wnd, GLFW_KEY_UP) == GLFW_PRESS)
+    else if (glfwGetKey(wnd, GLFW_KEY_0) == GLFW_PRESS)
     {
-        cameraUp.z += 1;
+        scene = 0;
     }
-    else if (glfwGetKey(wnd, GLFW_KEY_DOWN) == GLFW_PRESS)
+    else if (glfwGetKey(wnd, GLFW_KEY_1) == GLFW_PRESS)
     {
-        cameraUp.z -= 1;
-    }
-    else if (glfwGetKey(wnd, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        cameraUp.x += 1;
-    }
-    else if (glfwGetKey(wnd, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        cameraUp.x -= 1;
+        scene = 1;
     }
 }
