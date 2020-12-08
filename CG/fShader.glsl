@@ -7,9 +7,12 @@ uniform vec3 lightPosition;
 uniform vec3 viewPosition;
 uniform vec3 lightColor;
 uniform float shiness;
+uniform sampler2D textureIm;
 uniform sampler2D depthMap;
 uniform sampler2D normalMap;
+uniform sampler2D parallaxMap;
 uniform vec3 color;
+uniform float heightScale = 0.1;
 
 float calcShad(vec4 fPosLight, vec3 normal, vec3 lightDir)
 {
@@ -26,15 +29,24 @@ float calcShad(vec4 fPosLight, vec3 normal, vec3 lightDir)
     return shadow;
 }  
 
+in mat3 TBN;
+
+vec2 parallaxMapping(vec2 texCoords, vec3 viewDirInp)
+{ 
+	vec3 viewDir = transpose(TBN) * viewDirInp;
+    float height =  texture(parallaxMap, texCoords).r;    
+    vec2 p = viewDir.xy / viewDir.z * (height * heightScale);
+    return texCoords - p;    
+} 
+
 in vec3 fPosition;
 in vec3 vNormal;
 in vec3 vColor;
 in vec4 fPosLight;
-in mat3 TBN;
 in VS_OUT {
 	flat int plane;
 } fs_in;
-in vec2 texCoords;
+in vec2 texCoordsIn;
 
 out vec4 FragColor;
 
@@ -43,7 +55,13 @@ void main()
 	int plane = fs_in.plane;
 	float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor;
+	vec3 viewDir = normalize(viewPosition - fPosition);
 
+	vec2 texCoords = texCoordsIn;
+	texCoords = parallaxMapping(texCoordsIn, viewDir);
+	if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+		discard;
+	//texCoords = texCoordsIn;
 	vec3 norm = normalize(vNormal);
 	if (plane == 0)
 	{
@@ -56,7 +74,6 @@ void main()
 	vec3 diffuse = diff * lightColor;
 
 	float specularStrength = 0.5;
-	vec3 viewDir = normalize(viewPosition - fPosition);
 	vec3 halfwayDir = normalize(lightDir + viewDir);
 	//vec3 reflectDir = reflect(-lightDir, norm);  
 	float spec = pow(max(dot(viewDir, halfwayDir), 0.0), shiness);
@@ -68,6 +85,7 @@ void main()
 	vec3 resColor;
 	if (plane == 0)
 	{
+		//resColor = texture(textureIm, texCoords).rgb;
 		resColor = color;
 	}
 	else

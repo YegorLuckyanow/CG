@@ -12,7 +12,7 @@ out mat3 TBN;
 out VS_OUT {
 	flat int plane;
 } vs_out;
-out vec2 texCoords;
+out vec2 texCoordsIn;
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 normal;
@@ -40,6 +40,6 @@ void main()
 		plane = 0;
 	}
 	vs_out.plane = plane;
-	texCoords = vColor.rg;
+	texCoordsIn = vColor.rg;
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4( position, 1.0 );
 }

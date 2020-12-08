@@ -117,12 +117,52 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     int width, height, nrChannels;
-    stbi_set_flip_vertically_on_load(true);
+    //stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load("normalMap.png", &width, &height, &nrChannels, 0);
     glActiveTexture(GL_TEXTURE1);
     unsigned int normMap;
     glGenTextures(1, &normMap);
     glBindTexture(GL_TEXTURE_2D, normMap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    data = stbi_load("parallaxMap.png", &width, &height, &nrChannels, 0);
+    glActiveTexture(GL_TEXTURE2);
+    unsigned int parMap;
+    glGenTextures(1, &parMap);
+    glBindTexture(GL_TEXTURE_2D, parMap);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    data = stbi_load("imText.png", &width, &height, &nrChannels, 0);
+    glActiveTexture(GL_TEXTURE3);
+    unsigned int tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -216,8 +256,14 @@ int main()
             glBindTexture(GL_TEXTURE_2D, depthMap);
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, normMap);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, parMap);
+            glActiveTexture(GL_TEXTURE3);
+            glad_glBindTexture(GL_TEXTURE_2D, tex);
             glUniform1i(glGetUniformLocation(prog.ID, "depthMap"), 0);
             glUniform1i(glGetUniformLocation(prog.ID, "normalMap"), 1);
+            prog.setInt("parallaxMap", 2);
+            prog.setInt("textureIm", 3);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9 + 3);
         }
         glfwSwapBuffers(window);

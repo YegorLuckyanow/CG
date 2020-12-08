@@ -141,7 +141,9 @@
     <None Include="vShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="imText.png" />
     <Image Include="normalMap.png" />
+    <Image Include="parallaxMap.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
