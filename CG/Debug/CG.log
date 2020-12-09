@@ -1,5 +1,7 @@
 ﻿  main.cpp
 d:\еал\cg\cg\main.cpp(16): warning C4244: =: преобразование "int" в "float", возможна потеря данных
 d:\еал\cg\cg\main.cpp(17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
+d:\еал\cg\cg\main.cpp(27): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
 d:\еал\cg\cg\main.cpp(40): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
+d:\еал\cg\cg\main.cpp(296): warning C4244: =: преобразование "double" в "float", возможна потеря данных
   CG.vcxproj -> D:\ЕАЛ\CG\CG\Debug\CG.exe

@@ -24,7 +24,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Hello, OpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(wWidth, wHeight, "Hello, OpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -95,14 +95,13 @@ int main()
         getCube(glm::vec3(i * mult, 0.0f, 0.0f) + ang, glm::vec3(0.0f, -0.0f, -0.0f) + ang, glm::vec3(-0.0f, i * mult, -0.0f) + ang, glm::vec3(0.0f, 0.0f, i * mult) + ang, glm::vec3(0.0, 1.0, 1.0), vertices + i * 36 * args_nmb);
     }
     getTriangle(glm::vec3(-1000.0, -5.0, -1000.0), glm::vec3(-1000.0, -5.0, 1000.0), glm::vec3(1000.0, -5.0, 0.0f), glm::vec3(1.0f, 0.0f, 1.0f), vertices + 36 * args_nmb * 10);
-
-    float points[] = {
-        -0.5f,  0.5f,
-        0.5f,  0.5f,
-        -0.5f, -0.5f,
-        0.5f, -0.5f
-    };
-
+    float *vertices2 = new float[36 * args_nmb * 10 + 3 * args_nmb];
+    for (int i = 1; i < 10; ++i)
+    {
+        float mult = 0.25f;
+        glm::vec3 ang = glm::vec3(-1.0f) + 0.3f * i * glm::vec3(i % 3 == 1 ? -1.0f : 1.0f, i % 2 == 0 ? -1.0f : 1.0f, i % 3 == 2 ? -1.0f : 1.0f);
+        getCCube(glm::vec3(i * mult, 0.0f, 0.0f) + ang, glm::vec3(0.0f, -0.0f, -0.0f) + ang, glm::vec3(-0.0f, i * mult, -0.0f) + ang, glm::vec3(0.0f, 0.0f, i * mult) + ang, glm::vec3(0.0, 1.0, 1.0), vertices2 + i * 36 * args_nmb);
+    }
     unsigned int depthFBO;
     glGenFramebuffers(1, &depthFBO);
     const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
@@ -210,9 +209,13 @@ int main()
     unsigned int VBO2;
     glGenBuffers(1, &VBO2);
     glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), points, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, (10 * 36 * args_nmb + 3 * args_nmb) * sizeof(float), vertices2, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, args_nmb * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, args_nmb * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, args_nmb * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
 
     glm::mat4 model = glm::mat4(1.0f);
     //model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -223,15 +226,17 @@ int main()
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
     float near_plane = 1.0f, far_plane = 7.5f;
+    float time, time0;
     glEnable(GL_DEPTH_TEST);
     while (!glfwWindowShouldClose(window))
     {
-        hndKbInput(window, scene);
+        hndKbInput(window, scene, time0);
+        cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
+        projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
+        view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
         if (scene == 0)
         {
             glActiveTexture(GL_TEXTURE0);
-            cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
-            projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             glm::vec3 lightPos = glm::vec3(5.0f, 0.0f, -1.0f);
@@ -240,7 +245,6 @@ int main()
             glBindVertexArray(VAO);
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferData(GL_ARRAY_BUFFER, (10 * 36 * args_nmb + 3 * args_nmb) * sizeof(float), vertices, GL_STATIC_DRAW);
-            view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
             glm::mat4 lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
             shProg.use();
@@ -289,11 +293,17 @@ int main()
         }
         else if (scene == 1)
         {
+            time = glfwGetTime();
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             prog2.use();
+            prog2.setMat4("modelMatrix", model);
+            prog2.setMat4("viewMatrix", view);
+            prog2.setMat4("projectionMatrix", projection);
+            prog2.setFloat("time", time);
+            prog2.setFloat("time0", time0);
             glBindVertexArray(VAO2);
-            glDrawArrays(GL_POINTS, 0, 4);
+            glDrawArrays(GL_TRIANGLES, 36, 36 * 9);
         }
         glfwSwapBuffers(window);
         glfwPollEvents();

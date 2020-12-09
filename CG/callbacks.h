@@ -5,4 +5,4 @@
 
 void fbSzCallback(GLFWwindow *wnd, int w, int h);
 
-void hndKbInput(GLFWwindow *wnd, int &scene);
+void hndKbInput(GLFWwindow *wnd, int &scene, float &time0);
