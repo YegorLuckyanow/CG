@@ -138,6 +138,8 @@
     <None Include="fShader2.glsl" />
     <None Include="gShader.glsl" />
     <None Include="lightfShader.glsl" />
+    <None Include="postfShader.glsl" />
+    <None Include="postvShader.glsl" />
     <None Include="shadowfshader.glsl" />
     <None Include="shadowvshader.glsl" />
     <None Include="vShader.glsl" />

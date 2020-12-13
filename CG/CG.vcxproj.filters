@@ -70,6 +70,12 @@
     <None Include="vShader2.glsl">
       <Filter>Исходные файлы</Filter>
     </None>
+    <None Include="postvShader.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
+    <None Include="postfShader.glsl">
+      <Filter>Исходные файлы</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="normalMap.png">

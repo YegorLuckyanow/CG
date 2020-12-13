@@ -1,7 +1,5 @@
-﻿  main.cpp
-d:\еал\cg\cg\main.cpp(16): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-d:\еал\cg\cg\main.cpp(17): warning C4244: =: преобразование "int" в "float", возможна потеря данных
-d:\еал\cg\cg\main.cpp(27): warning C4244: аргумент: преобразование "float" в "int", возможна потеря данных
-d:\еал\cg\cg\main.cpp(40): warning C4244: аргумент: преобразование "float" в "GLsizei", возможна потеря данных
-d:\еал\cg\cg\main.cpp(296): warning C4244: =: преобразование "double" в "float", возможна потеря данных
+﻿  callbacks.cpp
+c:\program files (x86)\windows kits\10\include\10.0.17134.0\shared\minwindef.h(130): warning C4005: APIENTRY: изменение макроопределения
+  d:\еал\cg\cg\include\glad\glad.h(32): note: см. предыдущее определение "APIENTRY"
+d:\еал\cg\cg\callbacks.cpp(22): warning C4244: =: преобразование "double" в "float", возможна потеря данных
   CG.vcxproj -> D:\ЕАЛ\CG\CG\Debug\CG.exe

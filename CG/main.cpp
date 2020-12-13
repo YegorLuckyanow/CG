@@ -43,6 +43,7 @@ int main()
     Shader lightprog("vShader.glsl", "lightfShader.glsl");
     Shader shProg("shadowvshader.glsl", "shadowfshader.glsl");
     Shader prog2("vShader2.glsl", "gShader.glsl", "fShader2.glsl");
+    Shader postProg("postvShader.glsl", "postfShader.glsl");
     /*float vertices[] = {
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -122,6 +123,43 @@ int main()
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    unsigned int postFBO;
+    glGenFramebuffers(1, &postFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, postFBO);
+    unsigned int postText;
+    glGenTextures(1, &postText);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_2D, postText);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, wWidth, wHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, postText, 0); 
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, wWidth, wHeight);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    //glDrawBuffer(GL_NONE);
+    //glReadBuffer(GL_NONE);
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    float *postRect = new float[args_nmb * 6];
+    getRectangle(glm::vec3(1.0, -1.0, 0.0), glm::vec3(-1.0, -1.0, 0.0), glm::vec3(-1.0, 1.0, 0.0), glm::vec3(1.0f, 1.0f, 1.0f), postRect);
+    unsigned int postVAO;
+    glGenVertexArrays(1, &postVAO);
+    glBindVertexArray(postVAO);
+    unsigned int postVBO;
+    glGenBuffers(1, &postVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, postVBO);
+    glBufferData(GL_ARRAY_BUFFER, (6 * args_nmb) * sizeof(float), postRect, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, args_nmb * sizeof(float), (void*)0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, args_nmb * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
     
     int width, height, nrChannels;
     //stbi_set_flip_vertically_on_load(true);
@@ -227,13 +265,15 @@ int main()
     projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
     float near_plane = 1.0f, far_plane = 7.5f;
     float time, time0;
-    glEnable(GL_DEPTH_TEST);
+    int neg = 0;
     while (!glfwWindowShouldClose(window))
     {
-        hndKbInput(window, scene, time0);
+        glEnable(GL_DEPTH_TEST);
+        hndKbInput(window, scene, time0, neg);
         cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
         projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
         view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
+        fbSzCallback(window, wWidth, wHeight);
         if (scene == 0)
         {
             glActiveTexture(GL_TEXTURE0);
@@ -284,7 +324,7 @@ int main()
             glActiveTexture(GL_TEXTURE2);
             glBindTexture(GL_TEXTURE_2D, parMap);
             glActiveTexture(GL_TEXTURE3);
-            glad_glBindTexture(GL_TEXTURE_2D, tex);
+            glBindTexture(GL_TEXTURE_2D, tex);
             glUniform1i(glGetUniformLocation(prog.ID, "depthMap"), 0);
             glUniform1i(glGetUniformLocation(prog.ID, "normalMap"), 1);
             prog.setInt("parallaxMap", 2);
@@ -293,6 +333,11 @@ int main()
         }
         else if (scene == 1)
         {
+            cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
+            projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
+            view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
+            glBindFramebuffer(GL_FRAMEBUFFER, postFBO);
+            glEnable(GL_DEPTH_TEST);
             time = glfwGetTime();
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -304,6 +349,18 @@ int main()
             prog2.setFloat("time0", time0);
             glBindVertexArray(VAO2);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9);
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            postProg.use();
+            postProg.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
+            glBindVertexArray(postVAO);
+            glDisable(GL_DEPTH_TEST);
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, postText);
+            postProg.setInt("screenTexture", 5);
+            postProg.setInt("neg", neg);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
         }
         glfwSwapBuffers(window);
         glfwPollEvents();

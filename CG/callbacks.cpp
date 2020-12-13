@@ -1,8 +1,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include<glm/glm.hpp>
+#include <windows.h>
 
-void hndKbInput(GLFWwindow *wnd, int &scene, float &time0)
+void hndKbInput(GLFWwindow *wnd, int &scene, float &time0, int &neg)
 {
     if (glfwGetKey(wnd, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
@@ -19,5 +20,13 @@ void hndKbInput(GLFWwindow *wnd, int &scene, float &time0)
     else if (glfwGetKey(wnd, GLFW_KEY_T) == GLFW_PRESS)
     {
         time0 = glfwGetTime();
+        Sleep(100);
+        //while (glfwGetKey(wnd, GLFW_KEY_T) == GLFW_PRESS);
+    }
+    else if (glfwGetKey(wnd, GLFW_KEY_N) == GLFW_PRESS)
+    {
+        neg = (neg == 0) ? 1 : 0;
+        Sleep(100);
+        //while (glfwGetKey(wnd, GLFW_KEY_N) == GLFW_PRESS);
     }
 }
