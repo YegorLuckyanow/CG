@@ -261,24 +261,26 @@ int main()
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
     glm::vec3 cameraTarg = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 smokeColor = glm::vec3(1.0f, 0.5f, 0.5f);
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
     float near_plane = 1.0f, far_plane = 7.5f;
     float time, time0;
     int neg = 0;
+    time0 = glfwGetTime();
+    float smokeInt = 10.0f;
     while (!glfwWindowShouldClose(window))
     {
         glEnable(GL_DEPTH_TEST);
-        hndKbInput(window, scene, time0, neg);
+        hndKbInput(window, scene, time0, neg, smokeInt);
         cameraPos = glm::vec3(sin(glfwGetTime()) * 20.0f, 0.0f, cos(glfwGetTime()) * 20.0f);
         projection = glm::perspective(glm::radians(45.0f), wWidth / wHeight, 0.1f, 100.0f);
         view = glm::lookAt(cameraPos, cameraTarg, cameraUp);
         fbSzCallback(window, wWidth, wHeight);
         if (scene == 0)
         {
+            glEnable(GL_DEPTH_TEST);
             glActiveTexture(GL_TEXTURE0);
-            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
             glm::vec3 lightPos = glm::vec3(5.0f, 0.0f, -1.0f);
             glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             getCCube(glm::vec3(0.1f, 0.0f, 0.0f) + lightPos, lightPos, glm::vec3(-0.0f, 0.1f, -0.0f) + lightPos, glm::vec3(0.0f, 0.0f, 0.1f) + lightPos, lightColor, vertices);
@@ -297,6 +299,10 @@ int main()
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, postFBO);
+            glClearColor(smokeColor.r, smokeColor.g, smokeColor.b, 1.0f);
+            glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
             lightprog.use();
             lightprog.setMat4("modelMatrix", model);
@@ -329,7 +335,23 @@ int main()
             glUniform1i(glGetUniformLocation(prog.ID, "normalMap"), 1);
             prog.setInt("parallaxMap", 2);
             prog.setInt("textureIm", 3);
+            prog.setVec3("smokeColor", smokeColor);
+            prog.setFloat("smokeInt", smokeInt);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9 + 3);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            fbSzCallback(window, wWidth, wHeight);
+            postProg.use();
+            //postProg.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
+            glBindVertexArray(postVAO);
+            glDisable(GL_DEPTH_TEST);
+            glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, postText);
+            postProg.setInt("screenTexture", 5);
+            postProg.setInt("neg", neg);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
         }
         else if (scene == 1)
         {
@@ -350,8 +372,9 @@ int main()
             glBindVertexArray(VAO2);
             glDrawArrays(GL_TRIANGLES, 36, 36 * 9);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            fbSzCallback(window, wWidth, wHeight);
             postProg.use();
-            postProg.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
+            //postProg.setVec3("color", glm::vec3(1.0f, 1.0f, 1.0f));
             glBindVertexArray(postVAO);
             glDisable(GL_DEPTH_TEST);
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

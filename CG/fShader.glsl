@@ -1,7 +1,7 @@
 #version 330 core
-uniform mat4 modelMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 viewMatrix;
+//uniform mat4 modelMatrix;
+//uniform mat4 projectionMatrix;
+//uniform mat4 viewMatrix;
 
 uniform vec3 lightPosition;
 uniform vec3 viewPosition;
@@ -13,6 +13,8 @@ uniform sampler2D normalMap;
 uniform sampler2D parallaxMap;
 uniform vec3 color;
 uniform float heightScale = 0.1;
+uniform vec3 smokeColor;
+uniform float smokeInt;
 
 float calcShad(vec4 fPosLight, vec3 normal, vec3 lightDir)
 {
@@ -82,6 +84,8 @@ void main()
 	float shad = 1.0 - calcShad(fPosLight, norm, lightDir);
 	//shad = 1.0;
 
+	float smoke = abs(atan(length(fPosition - viewPosition) / smokeInt)) * 2 / 3.141;
+
 	vec3 resColor;
 	if (plane == 0)
 	{
@@ -92,5 +96,6 @@ void main()
 	{
 		resColor = vColor;
 	}
-	FragColor = vec4((shad * (ambient + diffuse + specular)) * resColor, 1.0);
+	//smoke = 0;
+	FragColor = vec4(smoke * smokeColor + (1.0 - smoke) * (shad * (ambient + diffuse + specular)) * resColor, 1.0);
 }
